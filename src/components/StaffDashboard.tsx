@@ -33,7 +33,7 @@ import {
 } from 'lucide-react'
 import type { AiAnalysisResult, AppointmentRequest, QueueToken, StaffAccount, PrescriptionItem, PatientVitals, AdditionalCheckInData, VitalsRecord } from '../types'
 import { formatTempCelsius } from '../types'
-import { formatLocalDateTime } from '../lib/dateTime'
+import { formatLocalDate, formatLocalDateTime, localDateKey } from '../lib/dateTime'
 import { explainMedication, generateStaffAnalytics, analyzePatientSymptomsAsync, analyzeVitalsAndTriage, getTriageRiskRating, getActiveAiProviderInfo, notifyDataChanged } from '../lib/aiService'
 import { buildQueueCsv, calculateQueueInsights, getQueuePosition } from '../lib/queueInsights'
 import type { Html5Qrcode as Html5QrcodeScanner } from 'html5-qrcode'
@@ -253,7 +253,9 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
     setDraftMeds([...draftMeds, nextItem])
   }
 
-  const nextWaitingPatient = [...queueTokens]
+  const todaysQueueTokens = queueTokens.filter((token) => localDateKey(token.issuedAt) === formatLocalDate())
+
+  const nextWaitingPatient = [...todaysQueueTokens]
     .filter((token) => !token.isCheckedIn && token.status !== 'Expired' && token.status !== 'Completed' && token.status !== 'Cancelled')
     .sort((a, b) => new Date(a.issuedAt).getTime() - new Date(b.issuedAt).getTime())[0]
 
@@ -753,7 +755,7 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
   }
 
   // Filter Tokens for Dashboard Queue List
-  const filteredTokens = queueTokens.filter((t) => {
+  const filteredTokens = todaysQueueTokens.filter((t) => {
     const matchesStatus = filterStatus === 'All' || t.status === filterStatus
     const matchesSearch =
       t.token.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -804,7 +806,7 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
 
   // AI Staff Analytics Data
   const analyticsData = generateStaffAnalytics(staffAccount, queueTokens)
-  const queueInsights = calculateQueueInsights(queueTokens)
+  const queueInsights = calculateQueueInsights(todaysQueueTokens)
 
   const handleExportQueueCsv = () => {
     const csv = buildQueueCsv(queueTokens)
@@ -923,7 +925,7 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
                 <div className="flex items-center justify-between">
                   <h3 className="font-black text-slate-900 text-lg">Today&apos;s OPD Queue</h3>
                   <span className="rounded-full bg-[#eafaf6] px-2.5 py-0.5 text-xs font-bold text-[#0c6b7a]">
-                    {queueTokens.length} Patients
+                    {todaysQueueTokens.length} Patients
                   </span>
                 </div>
 
@@ -1057,18 +1059,18 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-1">
                   <span className="text-xs font-bold text-slate-400">Total Registered</span>
-                  <div className="text-3xl font-black text-slate-900">{queueTokens.length}</div>
+                  <div className="text-3xl font-black text-slate-900">{todaysQueueTokens.length}</div>
                 </div>
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm space-y-1">
                   <span className="text-xs font-bold text-emerald-800">Checked In</span>
                   <div className="text-3xl font-black text-emerald-900">
-                    {queueTokens.filter((t) => t.isCheckedIn).length}
+                    {todaysQueueTokens.filter((t) => t.isCheckedIn).length}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 shadow-sm space-y-1">
                   <span className="text-xs font-bold text-amber-800">Waiting Room</span>
                   <div className="text-3xl font-black text-amber-900">
-                    {queueTokens.filter((t) => t.status === 'Waiting').length}
+                    {todaysQueueTokens.filter((t) => t.status === 'Waiting').length}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-blue-200 bg-blue-50/70 p-5 shadow-sm space-y-1">
@@ -1098,9 +1100,14 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
                     <div className="text-[0.68rem] font-bold uppercase tracking-wider text-slate-400">Avg wait</div>
                     <div className="mt-2 text-2xl font-black text-slate-900">{queueInsights.avgWaitMinutes}m</div>
                   </div>
-                  <div className="rounded-2xl border border-amber-200 bg-amber-50 p-3">
-                    <div className="text-[0.68rem] font-bold uppercase tracking-wider text-amber-700">Urgent flags</div>
-                    <div className="mt-2 text-2xl font-black text-amber-900">{queueInsights.emergencyFlags}</div>
+                  <div className="rounded-2xl border border-red-200 bg-red-50 p-3" aria-label="Emergency and urgent patient rate">
+                    <div className="text-[0.68rem] font-bold uppercase tracking-wider text-red-700">Emergency / urgent</div>
+                    <div className="mt-2 text-2xl font-black text-red-900">{queueInsights.emergencyFlags}</div>
+                    <div className="mt-1 text-[0.68rem] font-semibold text-red-800">
+                      {queueInsights.totalPatients > 0
+                        ? Math.round((queueInsights.emergencyFlags / queueInsights.totalPatients) * 100)
+                        : 0}% of today&apos;s queue
+                    </div>
                   </div>
                   <div className="rounded-2xl border border-blue-200 bg-blue-50 p-3">
                     <div className="text-[0.68rem] font-bold uppercase tracking-wider text-blue-700">Next patient</div>

@@ -113,7 +113,8 @@ html[data-theme='dark'] body [class*='bg-emerald-50/'] {
 
 html[data-theme='dark'] body [class~='text-emerald-900'],
 html[data-theme='dark'] body [class~='text-emerald-800'],
-html[data-theme='dark'] body [class~='text-emerald-700'] {
+html[data-theme='dark'] body [class~='text-emerald-700'],
+html[data-theme='dark'] body [class~='text-emerald-950'] {
   color: #a7e8cf;
 }
 
@@ -130,7 +131,8 @@ html[data-theme='dark'] body [class*='bg-red-50/'] {
 
 html[data-theme='dark'] body [class~='text-red-900'],
 html[data-theme='dark'] body [class~='text-red-800'],
-html[data-theme='dark'] body [class~='text-red-700'] {
+html[data-theme='dark'] body [class~='text-red-700'],
+html[data-theme='dark'] body [class~='text-red-950'] {
   color: #ffc0c0;
 }
 
@@ -147,7 +149,8 @@ html[data-theme='dark'] body [class*='bg-amber-50/'] {
 
 html[data-theme='dark'] body [class~='text-amber-900'],
 html[data-theme='dark'] body [class~='text-amber-800'],
-html[data-theme='dark'] body [class~='text-amber-700'] {
+html[data-theme='dark'] body [class~='text-amber-700'],
+html[data-theme='dark'] body [class~='text-amber-950'] {
   color: #f4d58c;
 }
 
@@ -168,21 +171,26 @@ html[data-theme='dark'] body [class~='border-blue-200'] {
 
 html[data-theme='dark'] body [class~='text-blue-900'],
 html[data-theme='dark'] body [class~='text-blue-800'],
-html[data-theme='dark'] body [class~='text-blue-700'] {
+html[data-theme='dark'] body [class~='text-blue-700'],
+html[data-theme='dark'] body [class~='text-blue-950'] {
   color: #b6dcf8;
 }
 
 html[data-theme='dark'] body [class~='bg-indigo-50'],
 html[data-theme='dark'] body [class~='bg-indigo-100'],
 html[data-theme='dark'] body [class~='bg-purple-50'],
-html[data-theme='dark'] body [class~='bg-purple-100'] {
+html[data-theme='dark'] body [class~='bg-purple-100'],
+html[data-theme='dark'] body [class*='bg-indigo-50/'],
+html[data-theme='dark'] body [class*='bg-purple-50/'] {
   background-color: #2b293b;
 }
 
 html[data-theme='dark'] body [class~='text-indigo-900'],
 html[data-theme='dark'] body [class~='text-indigo-800'],
 html[data-theme='dark'] body [class~='text-purple-900'],
-html[data-theme='dark'] body [class~='text-purple-800'] {
+html[data-theme='dark'] body [class~='text-purple-800'],
+html[data-theme='dark'] body [class~='text-indigo-950'],
+html[data-theme='dark'] body [class~='text-purple-950'] {
   color: #d6c8f4;
 }
 
