@@ -54,6 +54,7 @@ import { StaffDashboard } from './components/StaffDashboard'
 import { useTheme } from './lib/theme'
 import { generateClinicReport, notifyDataChanged } from './lib/aiService'
 import { fetchContactInquiries, generateContactInquiryId } from './lib/contactInquiries'
+import { formatLocalDate, localDateKey } from './lib/dateTime'
 import { deleteStaffAccount, fetchStaffAccounts, getStaffAccountErrorMessage, mergeStaffAccounts, saveStaffAccount } from './lib/staffAccounts'
 
 type DictationResult = {
@@ -148,7 +149,7 @@ function readStoredList<T>(key: string): T[] {
 }
 
 function getStoredQueueTokensWithDailyReset(): QueueToken[] {
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = formatLocalDate()
   const lastResetDate = localStorage.getItem('synq-last-reset-date')
   const isInitialized = localStorage.getItem('synq-queue-initialized')
   let tokens = readStoredList<QueueToken>('synq-queue')
@@ -162,8 +163,8 @@ function getStoredQueueTokensWithDailyReset(): QueueToken[] {
   if (lastResetDate !== todayStr) {
     // 12:00 AM Midnight Reset: Mark tokens issued before today as Expired so today starts fresh
     tokens = tokens.map((t) => {
-      const tokenDate = (t.issuedAt || '').slice(0, 10)
-      if (tokenDate !== todayStr && t.status === 'Waiting') {
+      const tokenDate = localDateKey(t.issuedAt)
+      if (tokenDate && tokenDate !== todayStr && t.status === 'Waiting') {
         return { ...t, status: 'Expired' as const, isExpired: true, expiredAt: `${tokenDate} 23:59:59` }
       }
       return t
@@ -1691,7 +1692,7 @@ function PatientDashboard() {
   const [appointmentDraft, setAppointmentDraft] = useState({
     service: 'General Medicine',
     doctor: availableDoctors[0]?.name ?? '',
-    date: new Date().toISOString().slice(0, 10),
+    date: formatLocalDate(),
     time: '09:00',
     reason: '',
     consultationMode: 'In-person' as 'In-person' | 'Video Call' | 'Phone Call',
@@ -1806,11 +1807,11 @@ function PatientDashboard() {
     .filter((entry) => patient && (entry.patientId === patient.id || entry.email === patient.email))
     .sort((first, second) => second.date.localeCompare(first.date))
 
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = formatLocalDate()
   // Active Token is ONLY set if user generated a token in current session or has an active waiting token generated TODAY
   const activeToken =
     (generatedToken && patientTokens.find((entry) => entry.id === generatedToken.id)) ??
-    patientTokens.find((entry) => (entry.issuedAt || '').slice(0, 10) === todayStr && !entry.isExpired && entry.status === 'Waiting') ??
+    patientTokens.find((entry) => localDateKey(entry.issuedAt) === todayStr && !entry.isExpired && entry.status === 'Waiting') ??
     null
 
   // Queue Wait Time Calculation
@@ -1965,7 +1966,7 @@ function PatientDashboard() {
     setAppointmentDraft({
       service: 'General Medicine',
       doctor: availableDoctors[0]?.name ?? '',
-      date: new Date().toISOString().slice(0, 10),
+      date: formatLocalDate(),
       time: '09:00',
       reason: '',
       consultationMode: 'In-person',
@@ -3048,7 +3049,7 @@ function AdminDashboard() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `mediqueue-contact-inquiries-${new Date().toISOString().slice(0, 10)}.csv`
+    link.download = `mediqueue-contact-inquiries-${formatLocalDate()}.csv`
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -3211,7 +3212,7 @@ function AdminDashboard() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `mediqueue-clinic-report-${new Date().toISOString().slice(0, 10)}.csv`
+    link.download = `mediqueue-clinic-report-${formatLocalDate()}.csv`
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -3221,7 +3222,7 @@ function AdminDashboard() {
   // Manual Reset Daily Queue (Admin Flush)
   const handleManualQueueReset = () => {
     if (window.confirm('Are you sure you want to flush today\'s active queue? Active tokens will be marked as Expired and removed from waiting line.')) {
-      const todayStr = new Date().toISOString().slice(0, 10)
+      const todayStr = formatLocalDate()
       const nowIso = new Date().toISOString()
       const resetTokens = queueTokens.map((t) => ({
         ...t,

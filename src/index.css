@@ -85,6 +85,10 @@ html[data-theme='dark'] body [class~='text-slate-400'] {
   color: #91a5b0;
 }
 
+html[data-theme='light'] body [class~='text-slate-400'] {
+  color: #526b76;
+}
+
 html[data-theme='dark'] body [class*='text-[#0c6b7a]'] {
   color: #5bd3c5;
 }

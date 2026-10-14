@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import type { AiAnalysisResult, AppointmentRequest, QueueToken, StaffAccount, PrescriptionItem, PatientVitals, AdditionalCheckInData, VitalsRecord } from '../types'
 import { formatTempCelsius } from '../types'
+import { formatLocalDateTime } from '../lib/dateTime'
 import { explainMedication, generateStaffAnalytics, analyzePatientSymptomsAsync, analyzeVitalsAndTriage, getTriageRiskRating, getActiveAiProviderInfo, notifyDataChanged } from '../lib/aiService'
 import { buildQueueCsv, calculateQueueInsights, getQueuePosition } from '../lib/queueInsights'
 import type { Html5Qrcode as Html5QrcodeScanner } from 'html5-qrcode'
@@ -125,7 +126,7 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
   const [editWeight, setEditWeight] = useState('68 kg')
   const [editOxygen, setEditOxygen] = useState('98 %')
   const [editBloodSugar, setEditBloodSugar] = useState('105 mg/dL')
-  const [editRecordDate, setEditRecordDate] = useState(new Date().toISOString().slice(0, 16))
+  const [editRecordDate, setEditRecordDate] = useState(formatLocalDateTime())
 
   const handleEditTempUnitChange = (newUnit: '°F' | '°C') => {
     if (editTempUnit === newUnit) return
@@ -349,7 +350,7 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
     setEditWeight(v?.weightKg || '68 kg')
     setEditOxygen(v?.oxygenLevel || '98 %')
     setEditBloodSugar(v?.bloodSugar || '105 mg/dL')
-    setEditRecordDate(new Date().toISOString().slice(0, 16))
+    setEditRecordDate(formatLocalDateTime())
     setIsEditingVitals(true)
   }
 
@@ -1812,7 +1813,7 @@ export function StaffDashboard({ staffAccount, queueTokens, appointments, onUpda
                     : { container: 'border-emerald-300 bg-emerald-50 text-emerald-950', bar: 'bg-emerald-600', light: 'bg-emerald-600', label: 'NORMAL' }
 
                 return (
-                  <section className={`rounded-2xl border p-4 ${styles.container}`} aria-label="AI screening risk rating" style={{ color: '#111827' }}>
+                  <section className={`rounded-2xl border p-4 ${styles.container}`} aria-label="AI screening risk rating">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wide">
